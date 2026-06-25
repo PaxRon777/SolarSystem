@@ -2,6 +2,8 @@
 
 Solar System simulator
 
+![Alt Text](screenshot.png)
+
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 ![VanillaJS](https://img.shields.io/badge/JavaScript-F7DF1E?logo=javascript&logoColor=black)
 
