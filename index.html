@@ -194,6 +194,62 @@
             color: #e0e0e0;
         }
 
+        /* Info list styling for Physical Properties and Orbital Characteristics */
+        .info-section h2 {
+            color: #3b82f6; /* Accent blue */
+            margin-bottom: 10px;
+            text-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
+            padding-bottom: 8px;
+            border-bottom: 1px solid rgba(148, 163, 184, 0.2); /* Subtle divider */
+        }
+
+        .info-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .info-list li {
+            display: flex;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+            color: #e0e0e0;
+        }
+
+        .info-list li:last-child {
+            border-bottom: none;
+        }
+
+        .info-list li::before {
+            content: "•";
+            color: rgba(148, 163, 184, 0.5); /* Subtle bullet */
+            margin-right: 8px;
+        }
+
+        .info-list li strong {
+            color: #94a3b8; /* Muted label color */
+            font-weight: 500;
+        }
+
+        .pipe-separator {
+            display: inline-block;
+            width: 24px;
+            text-align: center;
+            color: rgba(148, 163, 184, 0.3); /* Very subtle pipe */
+        }
+
+        .info-list li span:not(.pipe-separator) {
+            margin-left: 8px;
+            font-weight: 500;
+            color: #e2e8f0;
+        }
+
+        /* Spacing between sections */
+        .info-section + .info-section {
+            margin-top: 16px;
+        }
+
         /* Planet Buttons - Styled to match the charcoal theme */
         .planet-button {
             width: 100px; /* Increased width for full planet names */
@@ -301,31 +357,36 @@
 
     <!-- Planet Info Panel -->
     <div id="planet-info-panel">
-        <button id="close-panel">×</button>
-        <h1 id="panel-title"></h1>
-        <div class="planet-image-container">
-            <div id="spinning-planet" class="planet-spinning"></div>
-        </div>
+    <button id="close-panel">×</button>
+    <h1 id="panel-title"></h1>
+    <div class="planet-image-container">
+        <div id="spinning-planet" class="planet-spinning"></div>
+    </div>
         
-        <div class="info-section">
-            <h2>Overview</h2>
-            <p id="overview-content" class="info-content"></p>
-        </div>
+    <div class="info-section">
+        <h2>Overview</h2>
+        <p id="overview-content" class="info-content"></p>
+    </div>
         
-        <div class="info-section">
-            <h2>Size & Distance</h2>
-            <p id="size-distance-content" class="info-content"></p>
-        </div>
+    <div class="info-section">
+        <h2 id="combined-heading"><span>Physical Properties</span><span class="header-separator"> | </span><span>Orbital Characteristics</span></h2>
+        <ul id="physical-properties" class="info-list"></ul>
+    </div>
         
-        <div class="info-section">
-            <h2>Moons</h2>
-            <p id="moons-content" class="info-content"></p>
-        </div>
+    <div class="info-section section-divider">
+        <!-- Orbital characteristics list rendered below Physical Properties in the same section -->
+        <ul id="orbital-characteristics" class="info-list"></ul>
+    </div>
+        
+    <div class="info-section">
+        <h2>Moons & Rings</h2>
+        <p id="moons-content" class="info-content"></p>
+    </div>
 
-        <div class="info-section">
-            <h2>Atmosphere</h2>
-            <p id="atmosphere-content" class="info-content"></p>
-        </div>
+    <div class="info-section">
+        <h2>Atmosphere</h2>
+        <p id="atmosphere-content" class="info-content"></p>
+    </div>
     </div>
 
     <script src="./threejs/three.min.js"></script>
@@ -545,67 +606,221 @@
         const panelTitle = document.getElementById('panel-title');
         const spinningPlanetContainer = document.getElementById('spinning-planet');
         const overviewContent = document.getElementById('overview-content');
-        const sizeDistanceContent = document.getElementById('size-distance-content');
+        const physicalPropsList = document.getElementById('physical-properties');
+        const orbitalCharList = document.getElementById('orbital-characteristics');
         const moonsContent = document.getElementById('moons-content');
         const atmosphereContent = document.getElementById('atmosphere-content');
 
-        // Planet information data
+        // Helper: populate a list element with key-value pairs
+        function renderInfoList(container, data) {
+            container.innerHTML = '';
+            data.forEach(item => {
+                const li = document.createElement('li');
+                li.innerHTML = `<strong>${item.label}</strong><span class="pipe-separator"> | </span><span>${item.value}</span>`;
+                container.appendChild(li);
+            });
+        }
+
+        // Planet information data (detailed, SI units: km, degrees)
         const planetInfo = {
             mercury: {
                 name: "Mercury",
-                overview: "The smallest and innermost planet in the Solar System, Mercury is known for its rapid orbit around Earth. It has a diameter of about 4,869 km.",
-                sizeDistance: "Diameter: ~4,870 km | Distance from Sun: ~58 million km (0.39 AU) | Orbital Period: ~116 days",
-                moons: "Mercury has no moons and is the only planet without any orbital companions.",
-                atmosphere: "Mercury has virtually no atmosphere due to its small size and weak gravitational pull."
+                overview: "The smallest planet in our solar system and closest to the Sun. Despite being nearest to the Sun, it isn't the hottest planet due to its lack of atmosphere.",
+                physicalProperties: [
+                    { label: "Diameter", value: "4,879 km" },
+                    { label: "Mass", value: "3.285 × 10²³ kg" },
+                    { label: "Surface Area", value: "7.48 × 10⁷ km²" },
+                    { label: "Volume", value: "6.083 × 10¹⁰ km³" },
+                    { label: "Density", value: "5.427 g/cm³" },
+                    { label: "Surface Gravity", value: "3.7 m/s²" },
+                    { label: "Escape Velocity", value: "4.25 km/s" }
+                ],
+                orbitalCharacteristics: [
+                    { label: "Sun Distance", value: "57.9 million km (0.387 AU)" },
+                    { label: "Orbital Period", value: "87.97 days" },
+                    { label: "Orbital Velocity", value: "47.36 km/s" },
+                    { label: "Inclination", value: "7.0° to ecliptic" },
+                    { label: "Eccentricity", value: "0.2056" },
+                    { label: "Axial Tilt", value: "0.034° (essentially zero)" },
+                    { label: "Rotation Period", value: "58.6 Earth days" }
+                ],
+                moons: "Mercury has no moons. Its proximity to the Sun and strong solar tidal forces prevent any stable satellite orbits.",
+                atmosphere: "Virtually no atmosphere. Mercury has an extremely tenuous exosphere containing oxygen, sodium, hydrogen, helium, and potassium atoms blasted off from its surface by solar wind."
             },
+            
             venus: {
                 name: "Venus",
-                overview: "Often called Earth's sister, Venus is the second planet from the Sun with a similar size. It rotates in the opposite direction of most planets.",
-                sizeDistance: "Diameter: ~12,104 km | Distance from Sun: ~108 million km (0.72 AU) | Orbital Period: ~225 days",
-                moons: "Venus has no moons and is the only planet without any orbital companions.",
-                atmosphere: "Venus features a dense atmosphere with pressures of approximately 100 times that of Earth."
+                overview: "Often called Earth's 'sister planet' due to similar size and mass. Venus has the hottest surface of any planet in our solar system at 462°C (864°F) despite being farther from the Sun than Mercury.",
+                physicalProperties: [
+                    { label: "Diameter", value: "12,104 km" },
+                    { label: "Mass", value: "4.867 × 10²⁴ kg" },
+                    { label: "Surface Area", value: "4.602 × 10⁸ km²" },
+                    { label: "Volume", value: "9.284 × 10¹¹ km³" },
+                    { label: "Density", value: "5.243 g/cm³" },
+                    { label: "Surface Gravity", value: "8.87 m/s²" },
+                    { label: "Escape Velocity", value: "10.36 km/s" }
+                ],
+                orbitalCharacteristics: [
+                    { label: "Sun Distance", value: "108.2 million km (0.723 AU)" },
+                    { label: "Orbital Period", value: "224.7 days" },
+                    { label: "Orbital Velocity", value: "35.02 km/s" },
+                    { label: "Inclination", value: "3.39° to ecliptic" },
+                    { label: "Eccentricity", value: "0.0068 (nearly circular)" },
+                    { label: "Axial Tilt", value: "177.4° (retrograde rotation)" },
+                    { label: "Rotation Period", value: "-243 Earth days (retrograde)" }
+                ],
+                moons: "Venus has no moons. Its proximity to the Sun and lack of a significant magnetic field make moon capture unlikely.",
+                atmosphere: "Extremely dense atmosphere composed of 96.5% carbon dioxide and 3.5% nitrogen. Surface pressure is 92 times that of Earth's. Thick clouds of sulfuric acid create a runaway greenhouse effect."
             },
+            
             earth: {
                 name: "Earth",
-                overview: "The third planet from the Sun, Earth is the largest of the planets in the Solar System. It's known as 'the human race' and has one moon.",
-                sizeDistance: "Diameter: ~12,756 km | Distance from Sun: ~149 million km (1 AU) | Orbital Period: 365 days",
-                moons: "Earth has one moon, the largest of its three known satellites. The Moon orbits Earth every ~29.5 days.",
-                atmosphere: "Earth's atmosphere is characterized by a wide range of gases and molecules with temperatures ranging from -100°F to +100°F."
+                overview: "The only known planet to support life. Earth has liquid water on its surface, a protective magnetic field, and an atmosphere rich in nitrogen and oxygen that shields from harmful radiation.",
+                physicalProperties: [
+                    { label: "Diameter", value: "12,742 km" },
+                    { label: "Mass", value: "5.972 × 10²⁴ kg" },
+                    { label: "Surface Area", value: "5.101 × 10⁸ km²" },
+                    { label: "Volume", value: "1.083 × 10¹² km³" },
+                    { label: "Density", value: "5.514 g/cm³ (densest planet)" },
+                    { label: "Surface Gravity", value: "9.81 m/s²" },
+                    { label: "Escape Velocity", value: "11.19 km/s" }
+                ],
+                orbitalCharacteristics: [
+                    { label: "Sun Distance", value: "149.6 million km (1 AU)" },
+                    { label: "Orbital Period", value: "365.25 days (1 year)" },
+                    { label: "Orbital Velocity", value: "29.78 km/s" },
+                    { label: "Inclination", value: "0° (by definition)" },
+                    { label: "Eccentricity", value: "0.0167 (nearly circular)" },
+                    { label: "Axial Tilt", value: "23.44°" },
+                    { label: "Rotation Period", value: "0.997 Earth days (~24 hours)" }
+                ],
+                moons: "Earth has 1 moon (Luna/Selene). The Moon stabilizes Earth's axial tilt and drives ocean tides, playing a crucial role in maintaining habitable conditions.",
+                atmosphere: "Composed of 78% nitrogen, 21% oxygen, with trace amounts of argon, carbon dioxide, water vapor, and other gases. Protects from solar radiation and regulates temperature."
             },
+            
             mars: {
                 name: "Mars",
-                overview: "Known as the Red Planet, Mars has a diameter about 40% that of Earth. It's named after the Roman god of war.",
-                sizeDistance: "Diameter: ~6,787 km | Distance from Sun: ~228 million km (1.5 AU) | Orbital Period: ~687 days",
-                moons: "Mars has two moons: Phobos and Deimos. Both are small, rocky satellites.",
-                atmosphere: "Mars' atmosphere is much less dense than Earth's, with a pressure approximately 0.3% that of Earth."
+                overview: "Known as the 'Red Planet' due to iron oxide (rust) on its surface. Mars has the tallest volcano (Olympus Mons, 21.9 km high) and the largest canyon system (Valles Marineris, 4,000 km long) in the solar system.",
+                physicalProperties: [
+                    { label: "Diameter", value: "6,779 km" },
+                    { label: "Mass", value: "6.39 × 10²³ kg" },
+                    { label: "Surface Area", value: "1.448 × 10⁸ km²" },
+                    { label: "Volume", value: "1.632 × 10¹¹ km³" },
+                    { label: "Density", value: "3.933 g/cm³" },
+                    { label: "Surface Gravity", value: "3.72 m/s²" },
+                    { label: "Escape Velocity", value: "5.03 km/s" }
+                ],
+                orbitalCharacteristics: [
+                    { label: "Sun Distance", value: "227.9 million km (1.524 AU)" },
+                    { label: "Orbital Period", value: "687 days (1.88 years)" },
+                    { label: "Orbital Velocity", value: "24.07 km/s" },
+                    { label: "Inclination", value: "1.85° to ecliptic" },
+                    { label: "Eccentricity", value: "0.0934 (most eccentric after Mercury)" },
+                    { label: "Axial Tilt", value: "25.19° (similar to Earth)" },
+                    { label: "Rotation Period", value: "1.03 Earth days (~24h 37min)" }
+                ],
+                moons: "Mars has 2 small moons: Phobos (diameter ~22 km) and Deimos (diameter ~12 km). Both are irregularly shaped and likely captured asteroids.",
+                atmosphere: "Extremely thin atmosphere composed of 95% carbon dioxide, 2.7% nitrogen, 1.6% argon, with traces of oxygen and water vapor. Surface pressure is only 0.6% of Earth's."
             },
+            
             jupiter: {
                 name: "Jupiter",
-                overview: "The largest planet in the Solar System, Jupiter is an enormous planet composed mostly of solid elements and is known for its distinctive red color.",
-                sizeDistance: "Diameter: ~142,984 km | Distance from Sun: ~778 million km (5.2 AU) | Orbital Period: ~12 years",
-                moons: "Jupiter has 130+ confirmed moons with the most significant being the 'Big Three': Io, Europa, and Ganymede.",
-                atmosphere: "Jupiter's atmosphere is characterized by layers of color-changing clouds made up mainly of gases."
+                overview: "The largest planet in our solar system—more than twice as massive as all other planets combined. Jupiter's Great Red Spot is a storm larger than Earth that has raged for at least 400 years.",
+                physicalProperties: [
+                    { label: "Diameter", value: "139,820 km (equatorial)" },
+                    { label: "Mass", value: "1.898 × 10²⁷ kg" },
+                    { label: "Surface Area", value: "6.145 × 10¹⁰ km² (cloud tops)" },
+                    { label: "Volume", value: "1.431 × 10¹⁵ km³" },
+                    { label: "Density", value: "1.326 g/cm³ (least dense planet)" },
+                    { label: "Surface Gravity", value: "24.79 m/s²" },
+                    { label: "Escape Velocity", value: "59.5 km/s" }
+                ],
+                orbitalCharacteristics: [
+                    { label: "Sun Distance", value: "778.5 million km (5.2 AU)" },
+                    { label: "Orbital Period", value: "11.86 years" },
+                    { label: "Orbital Velocity", value: "13.07 km/s" },
+                    { label: "Inclination", value: "1.3° to ecliptic" },
+                    { label: "Eccentricity", value: "0.0489" },
+                    { label: "Axial Tilt", value: "3.13°" },
+                    { label: "Rotation Period", value: "9.93 hours (fastest in solar system)" }
+                ],
+                moons: "Jupiter has 95 known moons, including the four large Galilean moons: Io (most volcanically active body), Europa (subsurface ocean), Ganymede (largest moon in solar system), and Callisto.",
+                atmosphere: "Composed of approximately 90% hydrogen and 10% helium by volume, with traces of methane, ammonia, water vapor, and other compounds. Creates dramatic cloud bands and the Great Red Spot storm."
             },
+            
             saturn: {
                 name: "Saturn",
-                overview: "Famous for its distinctive ring system, Saturn is a large planet with a massive collection of rings around its body.",
-                sizeDistance: "Diameter: ~120,536 km | Distance from Sun: ~1.4 billion km (9.5 AU) | Orbital Period: ~29 years",
-                moons: "Saturn has over 100 known moons with the largest being Titan and Rhea.",
-                atmosphere: "Saturn's atmospheric composition is similar to Jupiter, including a wide range of gases and temperatures."
+                overview: "Famous for its spectacular ring system made of ice and rock particles ranging from tiny grains to house-sized boulders. Saturn is so light it would float in water if you could find a bathtub big enough.",
+                physicalProperties: [
+                    { label: "Diameter", value: "116,460 km (equatorial)" },
+                    { label: "Mass", value: "5.683 × 10²⁶ kg" },
+                    { label: "Surface Area", value: "4.272 × 10¹⁰ km² (cloud tops)" },
+                    { label: "Volume", value: "8.271 × 10¹⁴ km³" },
+                    { label: "Density", value: "0.687 g/cm³ (would float in water)" },
+                    { label: "Surface Gravity", value: "10.44 m/s²" },
+                    { label: "Escape Velocity", value: "35.5 km/s" }
+                ],
+                orbitalCharacteristics: [
+                    { label: "Sun Distance", value: "1,434 million km (9.54 AU)" },
+                    { label: "Orbital Period", value: "29.46 years" },
+                    { label: "Orbital Velocity", value: "9.68 km/s" },
+                    { label: "Inclination", value: "2.49° to ecliptic" },
+                    { label: "Eccentricity", value: "0.0565" },
+                    { label: "Axial Tilt", value: "26.73°" },
+                    { label: "Rotation Period", value: "10.66 hours" }
+                ],
+                moons: "Saturn has 146 known moons, including Titan (larger than Mercury with a thick atmosphere and liquid methane lakes) and Enceladus (ice geysers suggesting subsurface ocean).",
+                atmosphere: "Primarily hydrogen (96.3%) and helium (3.25%), with traces of methane and ammonia. Creates prominent cloud bands similar to Jupiter, though less contrasted."
             },
+            
             uranus: {
                 name: "Uranus",
-                overview: "The first planet discovered by modern methods, Uranus has an unusual sideways orientation with its axis tilted 90 degrees.",
-                sizeDistance: "Diameter: ~51,118 km | Distance from Sun: ~2.9 billion km (19.2 AU) | Orbital Period: ~84 years",
-                moons: "Uranus has more than 27 known moons with the largest being Titania and Oberon.",
-                atmosphere: "Uranus has a highly compressed atmospheric structure, with temperatures reaching as low as -220°C."
+                overview: "The only planet that rotates on its side, with an axial tilt of nearly 98°. This extreme tilt means each pole gets 42 years of continuous sunlight followed by 42 years of darkness during its orbit.",
+                physicalProperties: [
+                    { label: "Diameter", value: "50,724 km" },
+                    { label: "Mass", value: "8.681 × 10²⁵ kg" },
+                    { label: "Surface Area", value: "8.138 × 10⁹ km² (cloud tops)" },
+                    { label: "Volume", value: "6.833 × 10¹³ km³" },
+                    { label: "Density", value: "1.27 g/cm³" },
+                    { label: "Surface Gravity", value: "8.87 m/s²" },
+                    { label: "Escape Velocity", value: "21.3 km/s" }
+                ],
+                orbitalCharacteristics: [
+                    { label: "Sun Distance", value: "2,871 million km (19.2 AU)" },
+                    { label: "Orbital Period", value: "84 years" },
+                    { label: "Orbital Velocity", value: "6.81 km/s" },
+                    { label: "Inclination", value: "0.77° to ecliptic" },
+                    { label: "Eccentricity", value: "0.0457" },
+                    { label: "Axial Tilt", value: "97.77° (rotates on its side)" },
+                    { label: "Rotation Period", value: "-17.24 hours (retrograde)" }
+                ],
+                moons: "Uranus has 28 known moons, named after characters from Shakespeare and Alexander Pope. The five largest are Miranda, Ariel, Umbriel, Titania, and Oberon.",
+                atmosphere: "Composed of hydrogen (83%), helium (15%), and methane (2.3%). The methane absorbs red light, giving Uranus its distinctive blue-green color."
             },
+            
             neptune: {
                 name: "Neptune",
-                overview: "The last planet discovered in the Solar System, Neptune is similar to Uranus but slightly larger and more massive.",
-                sizeDistance: "Diameter: ~49,528 km | Distance from Sun: ~4.5 billion km (30.1 AU) | Orbital Period: ~165 years",
-                moons: "Neptune has 16 known moons with the largest being Triton, which rotates in the opposite direction of its orbit.",
-                atmosphere: "Neptune features a highly compressed atmospheric structure similar to Uranus but with more extreme temperatures."
+                overview: "The windiest planet in our solar system with speeds reaching 2,100 km/h. Neptune was the first planet discovered through mathematical prediction rather than direct observation.",
+                physicalProperties: [
+                    { label: "Diameter", value: "49,528 km" },
+                    { label: "Mass", value: "1.024 × 10²⁶ kg" },
+                    { label: "Surface Area", value: "7.619 × 10⁹ km² (cloud tops)" },
+                    { label: "Volume", value: "6.253 × 10¹³ km³" },
+                    { label: "Density", value: "1.638 g/cm³" },
+                    { label: "Surface Gravity", value: "11.15 m/s²" },
+                    { label: "Escape Velocity", value: "23.5 km/s" }
+                ],
+                orbitalCharacteristics: [
+                    { label: "Sun Distance", value: "4,495 million km (30.1 AU)" },
+                    { label: "Orbital Period", value: "164.8 years" },
+                    { label: "Orbital Velocity", value: "5.43 km/s" },
+                    { label: "Inclination", value: "1.77° to ecliptic" },
+                    { label: "Eccentricity", value: "0.0113 (nearly circular)" },
+                    { label: "Axial Tilt", value: "28.32°" },
+                    { label: "Rotation Period", value: "16.11 hours" }
+                ],
+                moons: "Neptune has 16 known moons, the largest being Triton (diameter ~2,700 km). Triton orbits in the opposite direction to Neptune's rotation and is slowly spiraling inward.",
+                atmosphere: "Composed of hydrogen (80%), helium (19%), and methane (1.5%). The methane gives Neptune its deep blue color. Contains the solar system's strongest winds."
             }
         };
 
@@ -706,7 +921,13 @@
             
             panelTitle.textContent = info.name;
             overviewContent.textContent = info.overview;
-            sizeDistanceContent.textContent = info.sizeDistance;
+            
+            // Render physical properties list
+            renderInfoList(physicalPropsList, info.physicalProperties);
+            
+            // Render orbital characteristics list
+            renderInfoList(orbitalCharList, info.orbitalCharacteristics);
+            
             moonsContent.textContent = info.moons;
             atmosphereContent.textContent = info.atmosphere;
             
