@@ -175,11 +175,10 @@
             box-shadow: inset 0 0 20px rgba(0,0,0,0.5);
         }
 
-        /* Planet spinning animation */
+        /* Planet spinning animation - Three.js canvas fills container */
         #spinning-planet canvas {
-            width: 180px;
-            height: 180px;
-            object-fit: cover;
+            width: 180px !important;
+            height: 180px !important;
         }
 
         .info-section h2 {
@@ -609,125 +608,94 @@
             }
         };
 
-        // Function to create spinning planet visualization
-        function createSpinningPlanet(planetName) {
-            // Clear previous content 
-            spinningPlanetContainer.innerHTML = '';
-            
-            // Create the container for our rotating planet
-            const planetCanvas = document.createElement('canvas');
-            planetCanvas.width = 180;
-            planetCanvas.height = 180;
-            spinningPlanetContainer.appendChild(planetCanvas);
-            
-            const ctx = planetCanvas.getContext('2d');
-            
-            // Get the planet data to determine size and color
-            let planetData = null;
-            for (let i = 0; i < planets.length; i++) {
-                if (planets[i].planetGroup.children[0].material.color) {
-                    const colorValue = planets[i].planetGroup.children[0].material.color.getHex();
-                    if ((planetName === 'mercury' && i === 0) || 
-                        (planetName === 'venus' && i === 1) ||
-                        (planetName === 'earth' && i === 2) ||
-                        (planetName === 'mars' && i === 3) ||
-                        (planetName === 'jupiter' && i === 4) ||
-                        (planetName === 'saturn' && i === 5) ||
-                        (planetName === 'uranus' && i === 6) ||
-                        (planetName === 'neptune' && i === 7)) {
-                        planetData = planets[i];
-                        break;
-                    }
-                }
-            }
-            
-            // Draw the spinning planet
-            function drawPlanet() {
-                const centerX = planetCanvas.width / 2;
-                const centerY = planetCanvas.height / 2;
-                let radius = 60; 
-                
-                if (planetName === 'mercury') radius = 15;
-                else if (planetName === 'venus') radius = 30;
-                else if (planetName === 'earth') radius = 32;
-                else if (planetName === 'mars') radius = 20;
-                else if (planetName === 'jupiter') radius = 100;
-                else if (planetName === 'saturn') radius = 80; 
-                else if (planetName === 'uranus') radius = 70;
-                else if (planetName === 'neptune') radius = 60;
+        // --- Mini Three.js scene for the spinning planet in the info panel ---
+        const miniScene = new THREE.Scene();
+        const miniCamera = new THREE.PerspectiveCamera(50, 1, 0.1, 100);
+        miniCamera.position.z = 3;
 
-                // Clear canvas
-                ctx.clearRect(0, 0, planetCanvas.width, planetCanvas.height);
-                
-                // Create gradient for the planet
-                const gradient = ctx.createRadialGradient(
-                    centerX - radius/3, 
-                    centerY - radius/3, 
-                    0,
-                    centerX, 
-                    centerY, 
-                    radius
-                );
-                
-                if (planetName === 'mercury') {
-                    gradient.addColorStop(0, '#aaaaaa');
-                    gradient.addColorStop(1, '#777777');
-                } else if (planetName === 'venus') {
-                    gradient.addColorStop(0, '#ffcc00'); 
-                    gradient.addColorStop(1, '#cc9900');
-                } else if (planetName === 'earth') {
-                    gradient.addColorStop(0, '#2233ff');
-                    gradient.addColorStop(1, '#1122aa');
-                } else if (planetName === 'mars') {
-                    gradient.addColorStop(0, '#ff4400');
-                    gradient.addColorStop(1, '#bb3300');
-                } else if (planetName === 'jupiter') {
-                    gradient.addColorStop(0, '#ccaa88');
-                    gradient.addColorStop(1, '#997755');
-                } else if (planetName === 'saturn') {
-                    gradient.addColorStop(0, '#ffddaa');
-                    gradient.addColorStop(1, '#ccaa66');
-                } else if (planetName === 'uranus') {
-                    gradient.addColorStop(0, '#add8e6');
-                    gradient.addColorStop(1, '#77aabb');
-                } else if (planetName === 'neptune') {
-                    gradient.addColorStop(0, '#0000ff');
-                    gradient.addColorStop(1, '#0000aa');
-                }
-                
-                // Draw planet
-                ctx.beginPath();
-                ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
-                ctx.fillStyle = gradient;
-                ctx.fill();
-                
-                // Add some texture effect for visual appeal (shadows)
-                if (planetName !== 'saturn') {
-                    ctx.beginPath();
-                    ctx.ellipse(centerX - radius/3, centerY - radius/4, radius/3, radius/6, 0, 0, Math.PI * 2);
-                    ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
-                    ctx.fill();
-                }
-                
-                // Draw orbit ring if Saturn
-                if (planetName === 'saturn') {
-                    const ringGradient = ctx.createLinearGradient(centerX - radius*1.5, centerY, centerX + radius*1.5, centerY);
-                    ringGradient.addColorStop(0, '#aaa');
-                    ringGradient.addColorStop(0.5, '#ffddaa');
-                    ringGradient.addColorStop(1, '#aaa');
-                    
-                    ctx.beginPath();
-                    ctx.ellipse(centerX, centerY, radius * 1.8, radius / 4, 0, 0, Math.PI * 2);
-                    ctx.strokeStyle = ringGradient;
-                    ctx.lineWidth = 6;
-                    ctx.stroke();
-                }
-                
-                // Continue animation
-                requestAnimationFrame(drawPlanet);
+        // Shared light so the mini sphere looks lit like the main scene
+        const miniAmbientLight = new THREE.AmbientLight(0x404040, 0.8);
+        miniScene.add(miniAmbientLight);
+        const miniSunLight = new THREE.DirectionalLight(0xffffff, 1.5);
+        miniSunLight.position.set(2, 2, 3);
+        miniScene.add(miniSunLight);
+
+        // Keep a reference to the current spinning renderer so we can dispose it
+        let spinningRenderer = null;
+        let spinningMesh = null;
+        let spinningRing = null;
+        let spinningAnimId = null;
+
+        function createSpinningPlanet(planetName) {
+            // Cancel previous animation loop
+            if (spinningAnimId !== undefined) cancelAnimationFrame(spinningAnimId);
+            spinningAnimId = undefined;
+
+            // Dispose old renderer and meshes
+            if (spinningRenderer) {
+                spinningRenderer.dispose();
+                spinningRenderer = null;
             }
-            
-            drawPlanet();
+            if (spinningMesh) { miniScene.remove(spinningMesh); spinningMesh = null; }
+            if (spinningRing) { miniScene.remove(spinningRing); spinningRing = null; }
+
+            // Clear container
+            spinningPlanetContainer.innerHTML = '';
+
+            const size = 180;
+
+            // Create a renderer that targets our container
+            spinningRenderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
+            spinningRenderer.setSize(size, size);
+            spinningRenderer.setPixelRatio(1);
+            spinningPlanetContainer.appendChild(spinningRenderer.domElement);
+
+            // Determine the texture for this planet from textureMap
+            const texKey = capitalizeFirst(planetName); // e.g. "mercury" -> "Mercury"
+            let material;
+            if (textureMap[texKey] && textureMap[texKey].length > 20) {
+                material = new THREE.MeshStandardMaterial({ map: loader.load(textureMap[texKey]) });
+            } else {
+                // Fallback to the solid color from the main scene
+                const fallbackColors = {
+                    mercury: 0xaaaaaa, venus: 0xffcc00, earth: 0x2233ff, mars: 0xff4400,
+                    jupiter: 0xccaa88, saturn: 0xffddaa, uranus: 0xadd8e6, neptune: 0x0000ff
+                };
+                material = new THREE.MeshStandardMaterial({ color: fallbackColors[planetName.toLowerCase()] || 0xffffff });
+            }
+
+            // Sphere geometry — high resolution so texture looks good at 180px
+            const sphereGeom = new THREE.SphereGeometry(1, 64, 64);
+            spinningMesh = new THREE.Mesh(sphereGeom, material);
+            miniScene.add(spinningMesh);
+
+            // Saturn rings
+            if (planetName.toLowerCase() === 'saturn') {
+                const ringGeom = new THREE.RingGeometry(1.3, 2.0, 64);
+                let ringMat;
+                if (textureMap["saturnring"] && textureMap["saturnring"].length > 20) {
+                    ringMat = new THREE.MeshStandardMaterial({ map: loader.load(textureMap["saturnring"]), side: THREE.DoubleSide, transparent: true });
+                } else {
+                    ringMat = new THREE.MeshStandardMaterial({ color: 0xccaa88, side: THREE.DoubleSide, transparent: true, opacity: 0.7 });
+                }
+                spinningRing = new THREE.Mesh(ringGeom, ringMat);
+                spinningRing.rotation.x = Math.PI * 0.45; // Tilted like real Saturn
+                miniScene.add(spinningRing);
+            }
+
+            // Animation loop for the mini scene
+            function renderMini() {
+                spinningAnimId = requestAnimationFrame(renderMini);
+                if (spinningMesh) spinningMesh.rotation.y += 0.008;
+                if (spinningRing) spinningRing.rotation.z += 0.003;
+                spinningRenderer.render(miniScene, miniCamera);
+            }
+            renderMini();
+        }
+
+        // Helper: capitalize first letter (mercury -> Mercury)
+        function capitalizeFirst(s) {
+            return s.charAt(0).toUpperCase() + s.slice(1);
         }
 
         // Show planet info panel with spinning planet
