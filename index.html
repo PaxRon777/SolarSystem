@@ -118,14 +118,14 @@
             transform: translateX(16px);
         }
 
-        /* Planet Info Panel */
+        /* Planet Info Panel - Charcoal themed with more transparency */
         #planet-info-panel {
             position: absolute;
             right: 0;
             top: 0;
             width: 350px; 
             height: 100%;
-            background: rgba(20, 20, 40, 0.9);
+            background: rgba(20, 20, 40, 0.8); /* Increased transparency */
             backdrop-filter: blur(10px);
             border-left: 1px solid rgba(255, 255, 255, 0.2);
             box-shadow: -8px 0 32px 0 rgba(0, 0, 0, 0.5);
@@ -162,13 +162,24 @@
             align-items: center;
             height: 200px;
             margin-bottom: 20px;
+            position: relative;
         }
 
-        #planet-image {
+        /* Spinning planet container */
+        #spinning-planet {
             width: 180px;
-            height: auto;
+            height: 180px;
             border-radius: 50%;
-            box-shadow: 0 0 30px rgba(255, 255, 255, 0.3);
+            overflow: hidden;
+            position: relative;
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.5);
+        }
+
+        /* Planet spinning animation */
+        #spinning-planet canvas {
+            width: 180px;
+            height: 180px;
+            object-fit: cover;
         }
 
         .info-section h2 {
@@ -183,22 +194,11 @@
             color: #e0e0e0;
         }
 
-        /* Planet buttons */
-        #planet-buttons-container {
-            position: absolute;
-            top: 50%;
-            right: 20px;
-            transform: translateY(-50%);
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            z-index: 999;
-        }
-
+        /* Planet Buttons - Styled to match the charcoal theme */
         .planet-button {
-            width: 40px;
+            width: 100px; /* Increased width for full planet names */
             height: 40px;
-            border-radius: 50%;
+            border-radius: 8px; /* Rounded corners as requested */
             background: rgba(255, 255, 255, 0.1);
             border: 1px solid rgba(255, 255, 255, 0.3);
             color: white;
@@ -208,14 +208,16 @@
             align-items: center;
             font-weight: bold;
             transition: all 0.3s ease;
+            text-align: center;
+            margin-right: 10px; /* Space between button and toggle */
         }
 
         .planet-button:hover {
             background: rgba(255, 255, 255, 0.3);
-            transform: scale(1.1);
+            transform: scale(1.05);
         }
 
-        /* Spinner animation */
+        /* Spinner animation for loading state */
         @keyframes spin {
             from { transform: rotate(0deg); }
             to { transform: rotate(360deg); }
@@ -247,27 +249,54 @@
 
         <h2>Planets</h2>
         <div id="planet-toggles">
-            <div class="switch-container"><span class="p-name">Mercury</span> <label class="switch"><input type="checkbox" data-id="0" checked><span class="slider"></span></label></div>
-            <div class="switch-container"><span class="p-name">Venus</span> <label class="switch"><input type="checkbox" data-id="1" checked><span class="slider"></span></label></div>
-            <div class="switch-container"><span class="p-name">Earth</span> <label class="switch"><input type="checkbox" data-id="2" checked><span class="slider"></span></label></div>
-            <div class="switch-container"><span class="p-name">Mars</span> <label class="switch"><input type="checkbox" data-id="3" checked><span class="slider"></span></label></div>
-            <div class="switch-container"><span class="p-name">Jupiter</span> <label class="switch"><input type="checkbox" data-id="4" checked><span class="slider"></span></label></div>
-            <div class="switch-container"><span class="p-name">Saturn</span> <label class="switch"><input type="checkbox" data-id="5" checked><span class="slider"></span></label></div>
-            <div class="switch-container"><span class="p-name">Uranus</span> <label class="switch"><input type="checkbox" data-id="6" checked><span class="slider"></span></label></div>
-            <div class="switch-container"><span class="p-name">Neptune</span> <label class="switch"><input type="checkbox" data-id="7" checked><span class="slider"></span></label></div>
+            <!-- Mercury -->
+            <div class="switch-container">
+                <button class="planet-button" data-planet="mercury">Mercury</button>
+                <label class="switch"><input type="checkbox" data-id="0" checked><span class="slider"></span></label>
+            </div>
+            
+            <!-- Venus -->
+            <div class="switch-container">
+                <button class="planet-button" data-planet="venus">Venus</button>
+                <label class="switch"><input type="checkbox" data-id="1" checked><span class="slider"></span></label>
+            </div>
+            
+            <!-- Earth -->
+            <div class="switch-container">
+                <button class="planet-button" data-planet="earth">Earth</button>
+                <label class="switch"><input type="checkbox" data-id="2" checked><span class="slider"></span></label>
+            </div>
+            
+            <!-- Mars -->
+            <div class="switch-container">
+                <button class="planet-button" data-planet="mars">Mars</button>
+                <label class="switch"><input type="checkbox" data-id="3" checked><span class="slider"></span></label>
+            </div>
+            
+            <!-- Jupiter -->
+            <div class="switch-container">
+                <button class="planet-button" data-planet="jupiter">Jupiter</button>
+                <label class="switch"><input type="checkbox" data-id="4" checked><span class="slider"></span></label>
+            </div>
+            
+            <!-- Saturn -->
+            <div class="switch-container">
+                <button class="planet-button" data-planet="saturn">Saturn</button>
+                <label class="switch"><input type="checkbox" data-id="5" checked><span class="slider"></span></label>
+            </div>
+            
+            <!-- Uranus -->
+            <div class="switch-container">
+                <button class="planet-button" data-planet="uranus">Uranus</button>
+                <label class="switch"><input type="checkbox" data-id="6" checked><span class="slider"></span></label>
+            </div>
+            
+            <!-- Neptune -->
+            <div class="switch-container">
+                <button class="planet-button" data-planet="neptune">Neptune</button>
+                <label class="switch"><input type="checkbox" data-id="7" checked><span class="slider"></span></label>
+            </div>
         </div>
-    </div>
-
-    <!-- Planet Buttons on the Right Side -->
-    <div id="planet-buttons-container">
-        <button class="planet-button" data-planet="mercury">M</button>
-        <button class="planet-button" data-planet="venus">V</button>
-        <button class="planet-button" data-planet="earth">E</button>
-        <button class="planet-button" data-planet="mars">Ma</button>
-        <button class="planet-button" data-planet="jupiter">J</button>
-        <button class="planet-button" data-planet="saturn">S</button>
-        <button class="planet-button" data-planet="uranus">U</button>
-        <button class="planet-button" data-planet="neptune">N</button>
     </div>
 
     <!-- Planet Info Panel -->
@@ -275,7 +304,7 @@
         <button id="close-panel">×</button>
         <h1 id="panel-title"></h1>
         <div class="planet-image-container">
-            <img id="planet-image" src="" alt="Planet Image" class="spinner">
+            <div id="spinning-planet" class="planet-spinning"></div>
         </div>
         
         <div class="info-section">
@@ -514,7 +543,7 @@
         const panel = document.getElementById('planet-info-panel');
         const closePanelBtn = document.getElementById('close-panel');
         const panelTitle = document.getElementById('panel-title');
-        const planetImage = document.getElementById('planet-image');
+        const spinningPlanetContainer = document.getElementById('spinning-planet');
         const overviewContent = document.getElementById('overview-content');
         const sizeDistanceContent = document.getElementById('size-distance-content');
         const moonsContent = document.getElementById('moons-content');
@@ -580,7 +609,128 @@
             }
         };
 
-        // Show planet info panel
+        // Function to create spinning planet visualization
+        function createSpinningPlanet(planetName) {
+            // Clear previous content 
+            spinningPlanetContainer.innerHTML = '';
+            
+            // Create the container for our rotating planet
+            const planetCanvas = document.createElement('canvas');
+            planetCanvas.width = 180;
+            planetCanvas.height = 180;
+            spinningPlanetContainer.appendChild(planetCanvas);
+            
+            const ctx = planetCanvas.getContext('2d');
+            
+            // Get the planet data to determine size and color
+            let planetData = null;
+            for (let i = 0; i < planets.length; i++) {
+                if (planets[i].planetGroup.children[0].material.color) {
+                    const colorValue = planets[i].planetGroup.children[0].material.color.getHex();
+                    if ((planetName === 'mercury' && i === 0) || 
+                        (planetName === 'venus' && i === 1) ||
+                        (planetName === 'earth' && i === 2) ||
+                        (planetName === 'mars' && i === 3) ||
+                        (planetName === 'jupiter' && i === 4) ||
+                        (planetName === 'saturn' && i === 5) ||
+                        (planetName === 'uranus' && i === 6) ||
+                        (planetName === 'neptune' && i === 7)) {
+                        planetData = planets[i];
+                        break;
+                    }
+                }
+            }
+            
+            // Draw the spinning planet
+            function drawPlanet() {
+                const centerX = planetCanvas.width / 2;
+                const centerY = planetCanvas.height / 2;
+                let radius = 60; 
+                
+                if (planetName === 'mercury') radius = 15;
+                else if (planetName === 'venus') radius = 30;
+                else if (planetName === 'earth') radius = 32;
+                else if (planetName === 'mars') radius = 20;
+                else if (planetName === 'jupiter') radius = 100;
+                else if (planetName === 'saturn') radius = 80; 
+                else if (planetName === 'uranus') radius = 70;
+                else if (planetName === 'neptune') radius = 60;
+
+                // Clear canvas
+                ctx.clearRect(0, 0, planetCanvas.width, planetCanvas.height);
+                
+                // Create gradient for the planet
+                const gradient = ctx.createRadialGradient(
+                    centerX - radius/3, 
+                    centerY - radius/3, 
+                    0,
+                    centerX, 
+                    centerY, 
+                    radius
+                );
+                
+                if (planetName === 'mercury') {
+                    gradient.addColorStop(0, '#aaaaaa');
+                    gradient.addColorStop(1, '#777777');
+                } else if (planetName === 'venus') {
+                    gradient.addColorStop(0, '#ffcc00'); 
+                    gradient.addColorStop(1, '#cc9900');
+                } else if (planetName === 'earth') {
+                    gradient.addColorStop(0, '#2233ff');
+                    gradient.addColorStop(1, '#1122aa');
+                } else if (planetName === 'mars') {
+                    gradient.addColorStop(0, '#ff4400');
+                    gradient.addColorStop(1, '#bb3300');
+                } else if (planetName === 'jupiter') {
+                    gradient.addColorStop(0, '#ccaa88');
+                    gradient.addColorStop(1, '#997755');
+                } else if (planetName === 'saturn') {
+                    gradient.addColorStop(0, '#ffddaa');
+                    gradient.addColorStop(1, '#ccaa66');
+                } else if (planetName === 'uranus') {
+                    gradient.addColorStop(0, '#add8e6');
+                    gradient.addColorStop(1, '#77aabb');
+                } else if (planetName === 'neptune') {
+                    gradient.addColorStop(0, '#0000ff');
+                    gradient.addColorStop(1, '#0000aa');
+                }
+                
+                // Draw planet
+                ctx.beginPath();
+                ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+                ctx.fillStyle = gradient;
+                ctx.fill();
+                
+                // Add some texture effect for visual appeal (shadows)
+                if (planetName !== 'saturn') {
+                    ctx.beginPath();
+                    ctx.ellipse(centerX - radius/3, centerY - radius/4, radius/3, radius/6, 0, 0, Math.PI * 2);
+                    ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+                    ctx.fill();
+                }
+                
+                // Draw orbit ring if Saturn
+                if (planetName === 'saturn') {
+                    const ringGradient = ctx.createLinearGradient(centerX - radius*1.5, centerY, centerX + radius*1.5, centerY);
+                    ringGradient.addColorStop(0, '#aaa');
+                    ringGradient.addColorStop(0.5, '#ffddaa');
+                    ringGradient.addColorStop(1, '#aaa');
+                    
+                    ctx.beginPath();
+                    ctx.ellipse(centerX, centerY, radius * 1.8, radius / 4, 0, 0, Math.PI * 2);
+                    ctx.strokeStyle = ringGradient;
+                    ctx.lineWidth = 6;
+                    ctx.stroke();
+                }
+                
+                // Continue animation
+                requestAnimationFrame(drawPlanet);
+            }
+            
+            drawPlanet();
+        }
+
+        // Show planet info panel with spinning planet
         function showPlanetInfo(planetName) {
             const info = planetInfo[planetName.toLowerCase()];
             if (!info) return;
@@ -591,9 +741,8 @@
             moonsContent.textContent = info.moons;
             atmosphereContent.textContent = info.atmosphere;
             
-            // Set planet image (we'll use a placeholder for now)
-            planetImage.src = `https://placehold.co/180x180?text=${info.name}`;
-            planetImage.classList.remove('spinner');
+            // Create spinning planet visualization
+            createSpinningPlanet(planetName);
             
             panel.style.display = 'block';
         }
@@ -603,7 +752,7 @@
             panel.style.display = 'none';
         });
 
-        // Planet buttons click handlers
+        // Planet buttons click handlers - both new and existing buttons
         document.querySelectorAll('.planet-button').forEach(button => {
             button.addEventListener('click', (e) => {
                 const planetName = e.target.getAttribute('data-planet');
