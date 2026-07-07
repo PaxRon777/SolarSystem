@@ -4,12 +4,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>3D Solar System Simulator - Lit</title>
+    <title>3D Solar System Simulator - Local</title>
     <style>
         body {
             margin: 0;
             overflow: hidden;
             background-color: #000;
+            font-family: sans-serif;
         }
 
         canvas {
@@ -21,7 +22,6 @@
             top: 20px;
             left: 20px;
             color: white;
-            font-family: sans-serif;
             pointer-events: none;
             text-shadow: 2px 2px 4px black;
         }
@@ -38,7 +38,6 @@
             border: 1px solid rgba(255, 255, 255, 0.2);
             box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
             color: white;
-            font-family: sans-serif;
             -webkit-user-select: none;
             user-select: none;
             z-index: 100;
@@ -118,6 +117,113 @@
         input:checked + .slider:before {
             transform: translateX(16px);
         }
+
+        /* Planet Info Panel */
+        #planet-info-panel {
+            position: absolute;
+            right: 0;
+            top: 0;
+            width: 350px; 
+            height: 100%;
+            background: rgba(20, 20, 40, 0.9);
+            backdrop-filter: blur(10px);
+            border-left: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: -8px 0 32px 0 rgba(0, 0, 0, 0.5);
+            padding: 20px;
+            overflow-y: auto;
+            z-index: 1000;
+            display: none;
+        }
+
+        #close-panel {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 18px;
+        }
+
+        #planet-info-panel h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-align: center;
+            color: white;
+        }
+
+        .planet-image-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 200px;
+            margin-bottom: 20px;
+        }
+
+        #planet-image {
+            width: 180px;
+            height: auto;
+            border-radius: 50%;
+            box-shadow: 0 0 30px rgba(255, 255, 255, 0.3);
+        }
+
+        .info-section h2 {
+            color: #4CAF50;
+            font-size: 1.4em;
+            margin-top: 20px;
+            margin-bottom: 10px;
+        }
+
+        .info-content {
+            line-height: 1.6;
+            color: #e0e0e0;
+        }
+
+        /* Planet buttons */
+        #planet-buttons-container {
+            position: absolute;
+            top: 50%;
+            right: 20px;
+            transform: translateY(-50%);
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            z-index: 999;
+        }
+
+        .planet-button {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .planet-button:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(1.1);
+        }
+
+        /* Spinner animation */
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .spinner {
+            animation: spin 2s linear infinite;
+        }
     </style>
 </head>
 
@@ -152,9 +258,50 @@
         </div>
     </div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <!-- Planet Buttons on the Right Side -->
+    <div id="planet-buttons-container">
+        <button class="planet-button" data-planet="mercury">M</button>
+        <button class="planet-button" data-planet="venus">V</button>
+        <button class="planet-button" data-planet="earth">E</button>
+        <button class="planet-button" data-planet="mars">Ma</button>
+        <button class="planet-button" data-planet="jupiter">J</button>
+        <button class="planet-button" data-planet="saturn">S</button>
+        <button class="planet-button" data-planet="uranus">U</button>
+        <button class="planet-button" data-planet="neptune">N</button>
+    </div>
 
+    <!-- Planet Info Panel -->
+    <div id="planet-info-panel">
+        <button id="close-panel">×</button>
+        <h1 id="panel-title"></h1>
+        <div class="planet-image-container">
+            <img id="planet-image" src="" alt="Planet Image" class="spinner">
+        </div>
+        
+        <div class="info-section">
+            <h2>Overview</h2>
+            <p id="overview-content" class="info-content"></p>
+        </div>
+        
+        <div class="info-section">
+            <h2>Size & Distance</h2>
+            <p id="size-distance-content" class="info-content"></p>
+        </div>
+        
+        <div class="info-section">
+            <h2>Moons</h2>
+            <p id="moons-content" class="info-content"></p>
+        </div>
+
+        <div class="info-section">
+            <h2>Atmosphere</h2>
+            <p id="atmosphere-content" class="info-content"></p>
+        </div>
+    </div>
+
+    <script src="./threejs/three.min.js"></script>
+    <script src="./threejs/OrbitControls.js"></script>
+    
     <!-- Assuming textures.js is in the same folder -->
     <script src="./textures.js"></script>
     <script>
@@ -239,7 +386,7 @@
             const context = canvas.getContext('2d');
             canvas.width = 1024; 
             canvas.height = 512;  
-            
+
             context.fillStyle = 'rgba(0, 0, 0, 0.6)'; 
             const panelHeight = 180; 
             const startY = (canvas.height - panelHeight) / 2;
@@ -363,6 +510,107 @@
             });
         });
 
+        // --- Planet Info Panel Logic ---
+        const panel = document.getElementById('planet-info-panel');
+        const closePanelBtn = document.getElementById('close-panel');
+        const panelTitle = document.getElementById('panel-title');
+        const planetImage = document.getElementById('planet-image');
+        const overviewContent = document.getElementById('overview-content');
+        const sizeDistanceContent = document.getElementById('size-distance-content');
+        const moonsContent = document.getElementById('moons-content');
+        const atmosphereContent = document.getElementById('atmosphere-content');
+
+        // Planet information data
+        const planetInfo = {
+            mercury: {
+                name: "Mercury",
+                overview: "The smallest and innermost planet in the Solar System, Mercury is known for its rapid orbit around Earth. It has a diameter of about 4,869 km.",
+                sizeDistance: "Diameter: ~4,870 km | Distance from Sun: ~58 million km (0.39 AU) | Orbital Period: ~116 days",
+                moons: "Mercury has no moons and is the only planet without any orbital companions.",
+                atmosphere: "Mercury has virtually no atmosphere due to its small size and weak gravitational pull."
+            },
+            venus: {
+                name: "Venus",
+                overview: "Often called Earth's sister, Venus is the second planet from the Sun with a similar size. It rotates in the opposite direction of most planets.",
+                sizeDistance: "Diameter: ~12,104 km | Distance from Sun: ~108 million km (0.72 AU) | Orbital Period: ~225 days",
+                moons: "Venus has no moons and is the only planet without any orbital companions.",
+                atmosphere: "Venus features a dense atmosphere with pressures of approximately 100 times that of Earth."
+            },
+            earth: {
+                name: "Earth",
+                overview: "The third planet from the Sun, Earth is the largest of the planets in the Solar System. It's known as 'the human race' and has one moon.",
+                sizeDistance: "Diameter: ~12,756 km | Distance from Sun: ~149 million km (1 AU) | Orbital Period: 365 days",
+                moons: "Earth has one moon, the largest of its three known satellites. The Moon orbits Earth every ~29.5 days.",
+                atmosphere: "Earth's atmosphere is characterized by a wide range of gases and molecules with temperatures ranging from -100°F to +100°F."
+            },
+            mars: {
+                name: "Mars",
+                overview: "Known as the Red Planet, Mars has a diameter about 40% that of Earth. It's named after the Roman god of war.",
+                sizeDistance: "Diameter: ~6,787 km | Distance from Sun: ~228 million km (1.5 AU) | Orbital Period: ~687 days",
+                moons: "Mars has two moons: Phobos and Deimos. Both are small, rocky satellites.",
+                atmosphere: "Mars' atmosphere is much less dense than Earth's, with a pressure approximately 0.3% that of Earth."
+            },
+            jupiter: {
+                name: "Jupiter",
+                overview: "The largest planet in the Solar System, Jupiter is an enormous planet composed mostly of solid elements and is known for its distinctive red color.",
+                sizeDistance: "Diameter: ~142,984 km | Distance from Sun: ~778 million km (5.2 AU) | Orbital Period: ~12 years",
+                moons: "Jupiter has 130+ confirmed moons with the most significant being the 'Big Three': Io, Europa, and Ganymede.",
+                atmosphere: "Jupiter's atmosphere is characterized by layers of color-changing clouds made up mainly of gases."
+            },
+            saturn: {
+                name: "Saturn",
+                overview: "Famous for its distinctive ring system, Saturn is a large planet with a massive collection of rings around its body.",
+                sizeDistance: "Diameter: ~120,536 km | Distance from Sun: ~1.4 billion km (9.5 AU) | Orbital Period: ~29 years",
+                moons: "Saturn has over 100 known moons with the largest being Titan and Rhea.",
+                atmosphere: "Saturn's atmospheric composition is similar to Jupiter, including a wide range of gases and temperatures."
+            },
+            uranus: {
+                name: "Uranus",
+                overview: "The first planet discovered by modern methods, Uranus has an unusual sideways orientation with its axis tilted 90 degrees.",
+                sizeDistance: "Diameter: ~51,118 km | Distance from Sun: ~2.9 billion km (19.2 AU) | Orbital Period: ~84 years",
+                moons: "Uranus has more than 27 known moons with the largest being Titania and Oberon.",
+                atmosphere: "Uranus has a highly compressed atmospheric structure, with temperatures reaching as low as -220°C."
+            },
+            neptune: {
+                name: "Neptune",
+                overview: "The last planet discovered in the Solar System, Neptune is similar to Uranus but slightly larger and more massive.",
+                sizeDistance: "Diameter: ~49,528 km | Distance from Sun: ~4.5 billion km (30.1 AU) | Orbital Period: ~165 years",
+                moons: "Neptune has 16 known moons with the largest being Triton, which rotates in the opposite direction of its orbit.",
+                atmosphere: "Neptune features a highly compressed atmospheric structure similar to Uranus but with more extreme temperatures."
+            }
+        };
+
+        // Show planet info panel
+        function showPlanetInfo(planetName) {
+            const info = planetInfo[planetName.toLowerCase()];
+            if (!info) return;
+            
+            panelTitle.textContent = info.name;
+            overviewContent.textContent = info.overview;
+            sizeDistanceContent.textContent = info.sizeDistance;
+            moonsContent.textContent = info.moons;
+            atmosphereContent.textContent = info.atmosphere;
+            
+            // Set planet image (we'll use a placeholder for now)
+            planetImage.src = `https://placehold.co/180x180?text=${info.name}`;
+            planetImage.classList.remove('spinner');
+            
+            panel.style.display = 'block';
+        }
+
+        // Close panel
+        closePanelBtn.addEventListener('click', () => {
+            panel.style.display = 'none';
+        });
+
+        // Planet buttons click handlers
+        document.querySelectorAll('.planet-button').forEach(button => {
+            button.addEventListener('click', (e) => {
+                const planetName = e.target.getAttribute('data-planet');
+                showPlanetInfo(planetName);
+            });
+        });
+
         // --- Animation Loop ---
         function animate() {
             requestAnimationFrame(animate);
@@ -390,5 +638,5 @@
 
         animate();
     </script>
-</body
+</body>
 </html>
